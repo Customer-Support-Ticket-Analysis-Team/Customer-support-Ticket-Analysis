@@ -4,18 +4,24 @@ import {
   Ticket,
   PlusCircle,
   BarChart3,
-  ChevronLeft,
   Clock2,
+  X,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
+  const navigate = useNavigate();
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/tickets', label: 'Manage Tickets', icon: Ticket },
     { path: '/tickets/new', label: 'Add New Ticket', icon: PlusCircle },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   ];
+
+  const handleMenuClick = (path) => {
+    navigate(path);
+    onToggle(false);
+  };
 
   return (
     <aside
@@ -30,6 +36,13 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             IIoT Support
           </span>
         </div>
+        <button
+          onClick={() => onToggle(false)}
+          className="p-2 text-white/60 hover:text-white rounded-lg transition-colors md:hidden"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       <nav className="flex-1 px-4 space-y-1">
@@ -37,6 +50,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
           <NavLink
             key={item.path}
             to={item.path}
+            end
+            onClick={() => handleMenuClick(item.path)}
             className={({ isActive }) => `
               flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-200 cursor-pointer
               ${isActive

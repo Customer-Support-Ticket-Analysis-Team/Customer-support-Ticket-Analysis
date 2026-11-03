@@ -83,181 +83,190 @@ const AddTicket = () => {
 
   const fieldIcon = (name) => {
     const icons = {
-      reported_by: <Mail className="w-4 h-4 text-slate-400" />,
-      machine_id: <Monitor className="w-4 h-4 text-slate-400" />,
-      description: <AlertTriangle className="w-4 h-4 text-slate-400" />,
+      reported_by: <Mail className="w-5 h-5 text-slate-400" />,
+      machine_id: <Monitor className="w-5 h-5 text-slate-400" />,
+      description: <AlertTriangle className="w-5 h-5 text-slate-400" />,
     };
     return icons[name];
   };
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="bg-industrial-light px-8 py-7 border-b border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-lg text-industrial-blue">
+          {/* Page header */}
+          <div className="bg-industrial-light px-8 py-8 border-b border-gray-100">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white p-2.5 rounded-xl text-industrial-blue shadow-sm">
                 <Mail className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Report New Issue</h2>
-                <p className="text-slate-500 text-sm">Create a support ticket for industrial equipment</p>
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Report New Issue</h2>
+                <p className="text-slate-500 text-sm mt-1">Create a support ticket for industrial equipment</p>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-7">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                  {fieldIcon('reported_by')}
-                  Reported By
-                </label>
-                <input
-                  type="text"
-                  name="reported_by"
-                  className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.reported_by ? 'border-red-500 bg-red-50' : 'border-gray-200'
-                  }`}
-                  value={formData.reported_by}
-                  onChange={handleChange}
-                  placeholder="e.g. Rahul Sharma"
-                />
-                {errors.reported_by && (
-                  <p className="text-xs text-red-600 flex items-center space-x-1">
-                    <AlertTriangle className="w-3 h-3" /> {errors.reported_by}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                  {fieldIcon('machine_id')}
-                  Machine ID
-                </label>
-                <input
-                  type="text"
-                  name="machine_id"
-                  className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all uppercase ${
-                    errors.machine_id ? 'border-red-500 bg-red-50' : 'border-gray-200'
-                  }`}
-                  value={formData.machine_id}
-                  onChange={handleChange}
-                  placeholder="e.g. M-101"
-                />
-                {errors.machine_id && (
-                  <p className="text-xs text-red-600 flex items-center space-x-1">
-                    <AlertTriangle className="w-3 h-3" /> {errors.machine_id}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Issue Type</label>
-                <select
-                  name="issue_type"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all"
-                  value={formData.issue_type}
-                  onChange={handleChange}
-                >
-                  {ISSUE_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Priority</label>
-                <select
-                  name="priority"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all"
-                  value={formData.priority}
-                  onChange={handleChange}
-                >
-                  {PRIORITIES.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
+          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* Personal & Machine Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Description</label>
-              <textarea
-                name="description"
-                rows="4"
-                className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.description ? 'border-red-500 bg-red-50' : 'border-gray-200'
-                }`}
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Describe the problem in detail, including any error messages or unusual behavior..."
-              />
-              {errors.description && (
-                <p className="text-xs text-red-600 flex items-center space-x-1">
-                  <AlertTriangle className="w-3 h-3" /> {errors.description}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-sm font-semibold text-gray-700">
-                <HelpCircle className="w-4 h-4 text-slate-400" />
-                Downtime Minutes
-              </div>
+              <label className="flex items-center space-x-4 text-sm font-semibold text-gray-700">
+                {fieldIcon('reported_by')}
+                Reported By
+              </label>
               <input
-                type="number"
-                name="downtime_minutes"
+                type="text"
+                name="reported_by"
                 className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.downtime_minutes ? 'border-red-500 bg-red-50' : 'border-gray-200'
+                  errors.reported_by ? 'border-red-500 bg-red-50' : 'border-gray-200'
                 }`}
-                value={formData.downtime_minutes}
+                value={formData.reported_by}
                 onChange={handleChange}
-                placeholder="e.g. 120"
+                placeholder="e.g. Rahul Sharma"
               />
-              {errors.downtime_minutes && (
-                <p className="text-xs text-red-600 flex items-center space-x-1">
-                  <AlertTriangle className="w-3 h-3" /> {errors.downtime_minutes}
+              {errors.reported_by && (
+                <p className="text-xs text-red-600 flex items-center space-x-1 mt-1">
+                  <AlertTriangle className="w-3 h-3" /> {errors.reported_by}
                 </p>
               )}
-              <p className="text-xs text-slate-500">Estimated time the machine was non-operational</p>
             </div>
 
-            <div className="flex items-center justify-between space-x-4 pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={() => navigate('/tickets')}
-                className="px-6 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="btn-primary"
-              >
-                {submitting ? (
-                  <>
-                    <Loading message="" className="w-4 h-4" />
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span>Create Ticket</span>
-                  </>
-                )}
-              </button>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-4 text-sm font-semibold text-gray-700">
+                {fieldIcon('machine_id')}
+                Machine ID
+              </label>
+              <input
+                type="text"
+                name="machine_id"
+                className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all uppercase ${
+                  errors.machine_id ? 'border-red-500 bg-red-50' : 'border-gray-200'
+                }`}
+                value={formData.machine_id}
+                onChange={handleChange}
+                placeholder="e.g. M-101"
+              />
+              {errors.machine_id && (
+                <p className="text-xs text-red-600 flex items-center space-x-1 mt-1">
+                  <AlertTriangle className="w-3 h-3" /> {errors.machine_id}
+                </p>
+              )}
             </div>
-          </form>
-        </div>
+          </div>
+
+          {/* Issue Type & Priority */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Issue Type</label>
+              <select
+                name="issue_type"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all"
+                value={formData.issue_type}
+                onChange={handleChange}
+              >
+                {ISSUE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Priority</label>
+              <select
+                name="priority"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer transition-all"
+                value={formData.priority}
+                onChange={handleChange}
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <label className="flex items-center space-x-4 text-sm font-semibold text-gray-700">
+              {fieldIcon('description')}
+              Description
+            </label>
+            <textarea
+              name="description"
+              rows="5"
+              className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                errors.description ? 'border-red-500 bg-red-50' : 'border-gray-200'
+              }`}
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe the problem in detail, including any error messages or unusual behavior..."
+            />
+            {errors.description && (
+              <p className="text-xs text-red-600 flex items-center space-x-1 mt-1">
+                <AlertTriangle className="w-3 h-3" /> {errors.description}
+              </p>
+            )}
+          </div>
+
+          {/* Downtime Minutes */}
+          <div className="space-y-2">
+            <div className="flex items-center space-x-4 text-sm font-semibold text-gray-700">
+              <HelpCircle className="w-5 h-5 text-slate-400" />
+              Downtime Minutes
+            </div>
+            <input
+              type="number"
+              name="downtime_minutes"
+              className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                errors.downtime_minutes ? 'border-red-500 bg-red-50' : 'border-gray-200'
+              }`}
+              value={formData.downtime_minutes}
+              onChange={handleChange}
+              placeholder="e.g. 120"
+            />
+            {errors.downtime_minutes && (
+              <p className="text-xs text-red-600 flex items-center space-x-1 mt-1">
+                <AlertTriangle className="w-3 h-3" /> {errors.downtime_minutes}
+              </p>
+            )}
+            <p className="text-xs text-slate-500 mt-1">Estimated time the machine was non-operational</p>
+          </div>
+
+          {/* Form actions */}
+          <div className="flex items-center justify-between space-x-4 pt-6 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => navigate('/tickets')}
+              className="px-6 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-gray-100 rounded-xl transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary"
+            >
+              {submitting ? (
+                <>
+                  <Loading message="" className="w-4 h-4" />
+                  <span className="ml-2">Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span className="ml-2">Create Ticket</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
     </Layout>
   );
 };

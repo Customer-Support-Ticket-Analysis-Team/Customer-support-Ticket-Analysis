@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard';
 import Tickets from './pages/Tickets';
 import AddTicket from './pages/AddTicket';
 import Analytics from './pages/Analytics';
+import Profile from './pages/Profile';
+import Layout from './components/layout/Layout';
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/tickets/new" element={<AddTicket />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/profile" element={<Layout><Profile /></Layout>} />
       </Routes>
     </Router>
   );
