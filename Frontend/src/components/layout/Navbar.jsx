@@ -4,7 +4,6 @@ import {
   Bell,
   User,
   Menu,
-  ChevronLeft,
   ChevronRight,
   Clock,
 } from 'lucide-react';
@@ -18,6 +17,7 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
   const location = useLocation();
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
@@ -112,38 +112,35 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="px-4 md:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
           <button
             onClick={onMenuToggle}
-            className="p-2.5 text-slate-600 hover:text-industrial-blue hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+            className="p-2 text-slate-600 hover:text-industrial-blue hover:bg-gray-100 rounded-lg transition-colors"
             aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
           >
-            {sidebarOpen ? (
-              <ChevronLeft className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            <Menu className="w-6 h-6" />
           </button>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <div className="bg-industrial-blue p-2 rounded-lg shadow-lg shadow-industrial-blue/20">
-              <Ticket className="w-6 h-6 text-white" />
+              <Ticket className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-sm font-bold text-gray-900 tracking-tight uppercase">IIoT Support</h1>
-              <p className="text-[11px] text-slate-500 font-medium">Customer Analytics</p>
+            <div className="hidden xs:block">
+              <h1 className="text-xs md:text-sm font-bold text-gray-900 tracking-tight uppercase">IIoT Support</h1>
+              <p className="text-[10px] text-slate-500 font-medium">Customer Analytics</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-5 hidden sm:flex">
-          <div className="hidden md:flex flex-col items-end">
-            <p className="text-sm font-medium text-gray-900">{formattedDate}</p>
-            <p className="text-xs text-slate-500">System Online</p>
+        <div className="flex items-center justify-end flex-1 gap-4 md:gap-8">
+          {/* Left group: Date + System Status (hidden on very small screens) */}
+          <div className="hidden md:flex flex-col items-end gap-0.5">
+            <p className="text-xs sm:text-sm font-medium text-gray-900">{formattedDate}</p>
+            <p className="text-[10px] text-slate-500">System Online</p>
           </div>
 
-          {/* Notification Button with Dropdown */}
-          <div className="relative">
+          {/* Center group: Notification Button */}
+          <div className="relative flex-shrink-0">
             <button
               onClick={() => {
                 setNotificationsOpen(!notificationsOpen);
@@ -223,8 +220,8 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
             )}
           </div>
 
-          {/* Profile Button */}
-          <div className="relative">
+          {/* Right group: Profile Button */}
+          <div className="relative flex-shrink-0">
             <button
               onClick={() => {
                 navigate('/profile');
@@ -243,21 +240,12 @@ const Navbar = ({ onMenuToggle, sidebarOpen }) => {
                   <User className="w-5 h-5" />
                 )}
               </div>
-              <span className={`text-sm font-medium ${isAuthenticated ? 'text-gray-900' : 'text-slate-400'}`}>
+              <span className={`hidden sm:inline text-sm font-medium truncate max-w-[150px] ${isAuthenticated ? 'text-gray-900' : 'text-slate-400'}`}>
                 {isAuthenticated && user?.name ? user.name : 'Profile'}
               </span>
               <ChevronRight className={`w-4 h-4 text-gray-400`} />
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-100 bg-gray-50 px-8">
-        <div className="flex items-center space-x-4 py-2">
-          <div className="w-1 h-5 bg-industrial-blue rounded-full"></div>
-          <span className="text-xs font-medium text-gray-500">{getPageTitle(location.pathname)}</span>
-          <span className="w-px h-2 bg-gray-200 mx-1"></span>
-          <span className="text-xs text-gray-400">{getPageSubtitle(location.pathname)}</span>
         </div>
       </div>
     </header>

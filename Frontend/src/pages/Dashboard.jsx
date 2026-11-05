@@ -5,25 +5,9 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCcw,
-  BarChart3,
 } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import { RecentTickets } from '../components/dashboard/RecentTickets';
-import { ChartContainer, COLORS } from '../components/dashboard/TicketCharts';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  LineChart,
-  Line,
-} from 'recharts';
 import Layout from '../components/layout/Layout';
 import Loading from '../components/common/Loading';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -32,57 +16,44 @@ import { analyticsService } from '../services/analyticsService';
 import { ticketService } from '../services/ticketService';
 import { formatDuration } from '../utils/formatters';
 import { useToast } from '../hooks/useToast';
+import HeatmapChart from '../components/analytics/HeatmapChart';
+import TimestampAnalysisChart from '../components/analytics/TimestampAnalysisChart';
 
 const Dashboard = () => {
   const [summary, setSummary] = useState(null);
   const [recentTickets, setRecentTickets] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
-  const [priorityData, setPriorityData] = useState([]);
-  const [trendData, setTrendData] = useState([]);
-  const [machineData, setMachineData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const { show, toasts } = useToast();
+
+  // Historical compact insights
+  const [ticketStatusData, setTicketStatusData] = useState(null);
+  const [firstResponseData, setFirstResponseData] = useState(null);
+
+  const { show } = useToast();
 
   const fetchData = useCallback(async () => {
     setRefreshing(true);
     setError(null);
     try {
-      const [summaryRes, ticketsRes, categoryRes, priorityRes, trendRes] = await Promise.all([
+      const [summaryRes, ticketsRes] = await Promise.all([
         analyticsService.getDashboardSummary(),
         ticketService.getAllTickets(),
-        analyticsService.getCategoryAnalysis(),
-        analyticsService.getPriorityAnalysis(),
-        analyticsService.getTrendsAnalysis(),
       ]);
 
       setSummary(summaryRes);
       setRecentTickets(Array.isArray(ticketsRes) ? ticketsRes : []);
 
-      if (categoryRes && categoryRes.labels) {
-        setCategoryData(categoryRes.labels.map((l, i) => ({ name: l, value: categoryRes.values[i] || 0 })));
-      }
-
-      if (priorityRes && priorityRes.labels) {
-        setPriorityData(priorityRes.labels.map((l, i) => ({ name: l, value: priorityRes.values[i] || 0 })));
-      }
-
-      if (trendRes && trendRes.labels) {
-        setTrendData(trendRes.labels.map((l, i) => ({ name: l, value: trendRes.values[i] || 0 })));
-      }
-
-      // Machine-wise distribution: derive from recent tickets if available
-      if (Array.isArray(ticketsRes) && ticketsRes.length > 0) {
-        const machineMap = {};
-        ticketsRes.forEach((t) => {
-          machineMap[t.machine_id] = (machineMap[t.machine_id] || 0) + 1;
-        });
-        setMachineData(
-          Object.entries(machineMap)
-            .map(([machine, count]) => ({ name: machine, value: count }))
-            .sort((a, b) => b.value - a.value)
-            .slice(0, 8)
-        );
+      // Fetch compact historical insights
+      try {
+        const [tsRes, frRes] = await Promise.all([
+          analyticsService.getHistoricalTicketStatus(),
+          analyticsService.getHistoricalFirstResponse(),
+        ]);
+        setTicketStatusData(tsRes.data?.data || tsRes.data || tsRes || null);
+        setFirstResponseData(frRes.data?.data || frRes.data || frRes || null);
+      } catch (e) {
+        // Historical insights are supplemental, not critical
+        console.warn('Historical insights unavailable:', e.message);
       }
     } catch (err) {
       setError(err.message);
@@ -106,8 +77,9 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">System Health Overview</h2>
             <p className="text-slate-500">Real-time tracking of industrial support tickets</p>
@@ -115,17 +87,17 @@ const Dashboard = () => {
           <button
             onClick={fetchData}
             disabled={refreshing}
-            className="flex items-center space-x-2.5 px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:shadow-soft transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center justify-center space-x-2.5 px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:shadow-soft transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <RefreshCcw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             <span>Refresh Data</span>
           </button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* KPI Cards (CRUD + Historical) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
           <StatCard
-            label="Total Tickets"
+            label="Total Tickets (CRUD)"
             value={summary?.total_tickets ?? 0}
             icon={Ticket}
             colorClass="bg-blue-600 shadow-blue-600/20"
@@ -155,87 +127,57 @@ const Dashboard = () => {
           <StatCard
             label="Resolution Rate"
             value={summary?.resolution_rate !== undefined ? `${summary.resolution_rate}%` : '0%'}
-            icon={BarChart3}
+            icon={Clock}
             colorClass="bg-indigo-600 shadow-indigo-600/20"
             trend={3}
           />
           <StatCard
-            label="Avg. Resolution Time"
-            value={formatDuration(summary?.average_resolution_hours)}
-            icon={Clock}
-            colorClass="bg-purple-600 shadow-purple-600/20"
-            trend={-1}
+            label="Historical Records"
+            value={summary?.historical_total ?? 0}
+            icon={Ticket}
+            colorClass="bg-industrial-blue shadow-blue-600/20"
+            trend={0}
           />
         </div>
 
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartContainer title="Ticket Distribution by Category">
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                innerRadius={70}
-                outerRadius={90}
-                paddingAngle={3}
-                dataKey="value"
-                label
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
-              <Legend verticalAlign="top" align="center" />
-            </PieChart>
-          </ChartContainer>
+        {/* Compact Historical Insights */}
+        {ticketStatusData || firstResponseData ? (
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="card h-full">
+              <div className="p-6 border-b border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900">Historical: Type vs Status</h3>
+                <p className="text-sm text-slate-500">Percentage distribution</p>
+              </div>
+              <div className="p-6">
+                <HeatmapChart
+                  title=""
+                  data={ticketStatusData}
+                  xKey="ticket_type"
+                  yKey="ticket_status"
+                  height={240}
+                />
+              </div>
+            </div>
 
-          <ChartContainer title="Tickets by Priority">
-            <BarChart data={priorityData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
-              <Legend verticalAlign="top" align="center" />
-              <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartContainer title="Monthly Ticket Trends">
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
-              <Legend verticalAlign="top" align="center" />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                dot={{ r: 4 }}
-                activeDot={{ r: 7, fill: '#3b82f6', stroke: '#ffffff', strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ChartContainer>
-
-          <ChartContainer title="Machine-wise Ticket Distribution">
-            <BarChart data={machineData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
-              <Bar dataKey="value" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </div>
+            <div className="card h-full">
+              <div className="p-6 border-b border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900">First Response: Coverage</h3>
+                <p className="text-sm text-slate-500">Timestamp availability</p>
+              </div>
+              <div className="p-6">
+                <TimestampAnalysisChart
+                  title=""
+                  data={firstResponseData}
+                  chartType="first-response"
+                  height={240}
+                />
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* Recent Tickets */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="lg:col-span-2">
             {recentTickets.length > 0 ? (
               <RecentTickets tickets={recentTickets.slice(0, 8)} />

@@ -162,7 +162,7 @@ const Tickets = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Ticket Inventory</h2>
@@ -170,7 +170,7 @@ const Tickets = () => {
           </div>
           <button
             onClick={fetchTickets}
-            className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:shadow-soft transition-all shadow-sm"
+            className="flex items-center justify-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:shadow-soft transition-all shadow-sm"
           >
             <RefreshCcw className="w-4 h-4" />
             <span>Refresh</span>
@@ -191,33 +191,35 @@ const Tickets = () => {
                   onKeyDown={(e) => e.key === 'Enter' && fetchTickets()}
                 />
               </div>
-              <select
-                className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full md:w-48"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="">All Statuses</option>
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </select>
-              <select
-                className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full md:w-48"
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-              >
-                <option value="">All Priorities</option>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Critical">Critical</option>
-              </select>
-              <button
-                onClick={fetchTickets}
-                className="btn-primary w-full md:w-auto"
-              >
-                Apply Filters
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <select
+                  className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-48"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Open">Open</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Resolved">Resolved</option>
+                </select>
+                <select
+                  className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-48"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                >
+                  <option value="">All Priorities</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+                <button
+                  onClick={fetchTickets}
+                  className="btn-primary w-full sm:w-auto"
+                >
+                  Apply Filters
+                </button>
+              </div>
             </div>
           </div>
 
@@ -232,9 +234,9 @@ const Tickets = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="min-w-full w-full text-left text-sm">
                 <thead className="bg-gray-50 text-slate-500 text-xs uppercase tracking-wider">
-                  <tr>
+                  <tr className="whitespace-nowrap">
                     <th className="px-6 py-4 font-semibold">Ticket ID</th>
                     <th className="px-6 py-4 font-semibold">Reported By</th>
                     <th className="px-6 py-4 font-semibold">Machine ID</th>
@@ -247,7 +249,7 @@ const Tickets = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {tickets.map((ticket) => (
-                    <tr key={ticket.id} className="hover:bg-gray-50 transition-colors group">
+                    <tr key={ticket.id} className="hover:bg-gray-50 transition-colors group whitespace-nowrap">
                       <td className="px-6 py-4 font-medium text-gray-900">#{ticket.ticket_code}</td>
                       <td className="px-6 py-4 text-gray-600">{ticket.reported_by}</td>
                       <td className="px-6 py-4 text-gray-600 font-mono">{ticket.machine_id}</td>

@@ -137,7 +137,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="space-y-8">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -212,7 +212,7 @@ const Profile = () => {
                   <p className="mt-1 text-slate-500 text-sm flex items-center space-x-2">
                     <Mail className="w-3 h-3" /> {formData.email || 'not provided'}
                   </p>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {stats.map((stat) => (
                       <div
                         key={stat.label}
@@ -304,7 +304,7 @@ const Profile = () => {
             </div>
           ) : (
             <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex items-center space-x-3">
                   <User className="w-5 h-5 text-industrial-blue" />

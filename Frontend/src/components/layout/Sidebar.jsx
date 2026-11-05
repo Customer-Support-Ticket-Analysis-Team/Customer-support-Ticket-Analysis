@@ -38,7 +38,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
         </div>
         <button
           onClick={() => onToggle(false)}
-          className="p-2 text-white/60 hover:text-white rounded-lg transition-colors md:hidden"
+          className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
           aria-label="Close menu"
         >
           <X className="w-5 h-5" />
