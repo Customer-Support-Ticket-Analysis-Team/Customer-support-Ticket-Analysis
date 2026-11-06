@@ -1,32 +1,43 @@
 import { apiRequest } from './api';
 
+const buildQuery = (params = {}) => {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.append(key, value);
+    }
+  });
+  const qs = query.toString();
+  return qs ? `?${qs}` : '';
+};
+
 export const analyticsService = {
-  // --- New historical analytics endpoints ---
-  getHistoricalTicketStatus: async () => {
-    return await apiRequest('/api/analytics/historical/ticket-status');
+  // --- New historical analytics endpoints (support ?from=&to=) ---
+  getHistoricalTicketStatus: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/ticket-status${buildQuery(params)}`);
   },
-  getHistoricalPriority: async () => {
-    return await apiRequest('/api/analytics/historical/priority');
+  getHistoricalPriority: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/priority${buildQuery(params)}`);
   },
-  getHistoricalProductTypes: async () => {
-    return await apiRequest('/api/analytics/historical/product-types');
+  getHistoricalProductTypes: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/product-types${buildQuery(params)}`);
   },
-  getHistoricalSatisfactionByType: async () => {
-    return await apiRequest('/api/analytics/historical/satisfaction-by-type');
+  getHistoricalSatisfactionByType: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/satisfaction-by-type${buildQuery(params)}`);
   },
-  getHistoricalSatisfactionByChannel: async () => {
-    return await apiRequest('/api/analytics/historical/satisfaction-by-channel');
+  getHistoricalSatisfactionByChannel: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/satisfaction-by-channel${buildQuery(params)}`);
   },
-  getHistoricalFirstResponse: async () => {
-    return await apiRequest('/api/analytics/historical/first-response');
+  getHistoricalFirstResponse: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/first-response${buildQuery(params)}`);
   },
-  getHistoricalResolution: async () => {
-    return await apiRequest('/api/analytics/historical/resolution');
+  getHistoricalResolution: async (params = {}) => {
+    return await apiRequest(`/api/analytics/historical/resolution${buildQuery(params)}`);
   },
 
   // --- Existing endpoints preserved for backward compatibility ---
-  getDashboardSummary: async () => {
-    return await apiRequest('/api/dashboard/summary');
+  getDashboardSummary: async (params = {}) => {
+    return await apiRequest(`/api/dashboard/summary${buildQuery(params)}`);
   },
   exportTicketsCSV: async () => {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/export/tickets`);

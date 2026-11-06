@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ExternalLink, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Link, ExternalLink, Clock } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
 const StatusBadge = ({ status }) => {
@@ -30,13 +30,44 @@ const PriorityBadge = ({ priority }) => {
   );
 };
 
-const RecentTickets = ({ tickets }) => {
+const RecentTickets = ({ tickets, title = 'Recent Support Tickets', subtitle = 'Latest tickets within the selected date range' }) => {
+  const navigate = useNavigate();
+
+  const handleViewDetails = () => {
+    navigate('/tickets');
+  };
+
+  if (!tickets || tickets.length === 0) {
+    return (
+      <div className="card h-full">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+          </div>
+          <Link
+            to="/tickets"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center transition-colors"
+          >
+            View All <ExternalLink className="w-3.5 h-3.5 ml-1" />
+          </Link>
+        </div>
+        <div className="p-12 text-center">
+          <p className="text-slate-500 text-sm">No recent tickets found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="card">
+    <div className="card h-full">
       <div className="p-6 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-slate-400" />
-          <h3 className="text-lg font-bold text-gray-900">Recent Tickets</h3>
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <p className="text-xs text-slate-500">{subtitle}</p>
+          </div>
         </div>
         <Link
           to="/tickets"
@@ -49,21 +80,34 @@ const RecentTickets = ({ tickets }) => {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="bg-gray-50">
-              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">ID</th>
-              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Machine</th>
+              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ticket ID</th>
+              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Reported By</th>
+              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Machine ID / Product</th>
+              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Issue Type</th>
               <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Priority</th>
               <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Created</th>
+              <th className="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {tickets.map((ticket) => (
               <tr key={ticket.id} className="hover:bg-gray-50 transition-colors group">
                 <td className="px-4 py-4 font-medium text-gray-900">#{ticket.ticket_code}</td>
-                <td className="px-4 py-4 text-gray-600">{ticket.machine_id}</td>
+                <td className="px-4 py-4 text-gray-600">{ticket.reported_by || 'N/A'}</td>
+                <td className="px-4 py-4 text-gray-600 font-mono">{ticket.machine_id || 'N/A'}</td>
+                <td className="px-4 py-4 text-gray-600">{ticket.issue_type || 'N/A'}</td>
                 <td className="px-4 py-4"><PriorityBadge priority={ticket.priority} /></td>
                 <td className="px-4 py-4"><StatusBadge status={ticket.status} /></td>
                 <td className="px-4 py-4 text-gray-500">{formatDate(ticket.created_at)}</td>
+                <td className="px-4 py-4 text-right">
+                  <button
+                    onClick={handleViewDetails}
+                    className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-3 py-1.5 border border-blue-100 rounded hover:bg-blue-50"
+                  >
+                    View Details
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -74,3 +118,4 @@ const RecentTickets = ({ tickets }) => {
 };
 
 export { RecentTickets, StatusBadge, PriorityBadge };
+export default RecentTickets;

@@ -6,6 +6,7 @@ import { analyticsService } from '../services/analyticsService';
 import HeatmapChart from '../components/analytics/HeatmapChart';
 import BoxPlotChart from '../components/analytics/BoxPlotChart';
 import TimestampAnalysisChart from '../components/analytics/TimestampAnalysisChart';
+import AnimatedHorizontalBarChart from '../components/analytics/AnimatedHorizontalBarChart';
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
@@ -166,12 +167,11 @@ const Analytics = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Chart 6: First Response Time */}
-            <TimestampAnalysisChart
-              title="First Response Time Analysis"
-              subtitle="Availability and distribution of first-response timestamps"
-              data={firstResponseData}
-              chartType="first-response"
+            {/* Chart 6: Ticket Type Complaints Bar Chart */}
+            <AnimatedHorizontalBarChart
+              title="Number of Complaints by Ticket Type"
+              subtitle="Historical ticket volume across complaint categories"
+              data={ticketStatusData}
               height={380}
             />
 
