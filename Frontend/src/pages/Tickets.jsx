@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Search, Filter, RefreshCcw } from 'lucide-react';
+import { X, Search, Filter, RefreshCcw, Calendar, User } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import Loading from '../components/common/Loading';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -8,6 +8,13 @@ import { ticketService } from '../services/ticketService';
 import { StatusBadge, PriorityBadge } from '../components/dashboard/RecentTickets';
 import { formatDate } from '../utils/formatters';
 import { useToast } from '../hooks/useToast';
+
+const AGENT_LIST = [
+  'Agent A',
+  'Agent B',
+  'Agent C',
+  'Agent D',
+];
 
 const TicketDetailsModal = ({ ticket, onClose }) => {
   if (!ticket) return null;
@@ -28,6 +35,13 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
             </span>
             <h3 className="text-xl font-bold text-gray-900">Ticket Details</h3>
           </div>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            ticket.source === 'Historical'
+              ? 'bg-amber-100 text-amber-700 border border-amber-200'
+              : 'bg-blue-100 text-blue-700 border border-blue-200'
+          }`}>
+            {ticket.source}
+          </span>
           <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -37,7 +51,7 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Reported By</p>
-              <p className="text-sm font-medium text-gray-900">{ticket.reported_by}</p>
+              <p className="text-sm font-medium text-gray-900">{ticket.reported_by || '—'}</p>
             </div>
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Machine ID</p>
@@ -54,6 +68,12 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Status</p>
               <div><StatusBadge status={ticket.status} /></div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Assigned Agent</p>
+              <p className="text-sm font-medium text-gray-900">
+                {ticket.source === 'Historical' ? 'N/A' : ticket.assigned_agent || 'Not assigned'}
+              </p>
             </div>
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Downtime</p>
@@ -104,6 +124,9 @@ const Tickets = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [customerFilter, setCustomerFilter] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
   const { show } = useToast();
 
@@ -113,8 +136,11 @@ const Tickets = () => {
     try {
       const params = {};
       if (searchTerm.trim()) params.search = searchTerm.trim();
+      if (customerFilter.trim()) params.customer = customerFilter.trim();
       if (statusFilter) params.status = statusFilter;
       if (priorityFilter) params.priority = priorityFilter;
+      if (fromDate) params.from = fromDate;
+      if (toDate) params.to = toDate;
 
       const data = await ticketService.getAllTickets(params);
       setTickets(Array.isArray(data) ? data : []);
@@ -124,7 +150,7 @@ const Tickets = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, statusFilter, priorityFilter, show]);
+  }, [searchTerm, customerFilter, statusFilter, priorityFilter, fromDate, toDate, show]);
 
   const updateStatus = async (id, newStatus) => {
     try {
@@ -137,6 +163,20 @@ const Tickets = () => {
       });
     } catch (err) {
       show({ title: 'Failed to update status', description: err.message, type: 'error' });
+    }
+  };
+
+  const updateAgent = async (id, agent) => {
+    try {
+      await ticketService.updateTicketAgent(id, agent);
+      await fetchTickets();
+      show({
+        title: 'Agent Updated',
+        description: `Ticket #${id} agent ${agent ? 'assigned to ' + agent : 'unassigned'}`,
+        type: 'success',
+      });
+    } catch (err) {
+      show({ title: 'Failed to update agent', description: err.message, type: 'error' });
     }
   };
 
@@ -179,8 +219,9 @@ const Tickets = () => {
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative w-full md:w-80">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search */}
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
@@ -191,35 +232,76 @@ const Tickets = () => {
                   onKeyDown={(e) => e.key === 'Enter' && fetchTickets()}
                 />
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <select
-                  className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-48"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Resolved">Resolved</option>
-                </select>
-                <select
-                  className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-48"
-                  value={priorityFilter}
-                  onChange={(e) => setPriorityFilter(e.target.value)}
-                >
-                  <option value="">All Priorities</option>
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Critical">Critical</option>
-                </select>
-                <button
-                  onClick={fetchTickets}
-                  className="btn-primary w-full sm:w-auto"
-                >
-                  Apply Filters
-                </button>
+
+              {/* Customer filter */}
+              <div className="relative w-full">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter by customer name..."
+                  className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={customerFilter}
+                  onChange={(e) => setCustomerFilter(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchTickets()}
+                />
               </div>
+
+              {/* Date From */}
+              <div className="relative w-full">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="date"
+                  placeholder="From"
+                  className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </div>
+
+              {/* Date To */}
+              <div className="relative w-full">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="date"
+                  placeholder="To"
+                  className="pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </div>
+
+              {/* Status filter */}
+              <select
+                className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+
+              {/* Priority filter */}
+              <select
+                className="px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <option value="">All Priorities</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+
+              {/* Apply Filters button */}
+              <button
+                onClick={fetchTickets}
+                className="col-span-1 md:col-auto btn-primary"
+              >
+                <Filter className="w-4 h-4 mr-2" />Apply Filters
+              </button>
             </div>
           </div>
 
@@ -243,6 +325,7 @@ const Tickets = () => {
                     <th className="px-6 py-4 font-semibold">Issue Type</th>
                     <th className="px-6 py-4 font-semibold">Priority</th>
                     <th className="px-6 py-4 font-semibold">Status</th>
+                    <th className="px-6 py-4 font-semibold">Assigned Agent</th>
                     <th className="px-6 py-4 font-semibold">Created At</th>
                     <th className="px-6 py-4 font-semibold text-right">Actions</th>
                   </tr>
@@ -251,20 +334,55 @@ const Tickets = () => {
                   {tickets.map((ticket) => (
                     <tr key={ticket.id} className="hover:bg-gray-50 transition-colors group whitespace-nowrap">
                       <td className="px-6 py-4 font-medium text-gray-900">#{ticket.ticket_code}</td>
-                      <td className="px-6 py-4 text-gray-600">{ticket.reported_by}</td>
+                      <td className="px-6 py-4 text-gray-600">{ticket.reported_by || '—'}</td>
                       <td className="px-6 py-4 text-gray-600 font-mono">{ticket.machine_id}</td>
                       <td className="px-6 py-4 text-gray-600">{ticket.issue_type}</td>
                       <td className="px-6 py-4"><PriorityBadge priority={ticket.priority} /></td>
                       <td className="px-6 py-4">
-                        <select
-                          className="text-xs font-semibold bg-transparent border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                          value={ticket.status}
-                          onChange={(e) => updateStatus(ticket.id, e.target.value)}
-                        >
-                          <option value="Open">Open</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Resolved">Resolved</option>
-                        </select>
+                        {ticket.source === 'Historical' ? (
+                          // Historical tickets: read-only status badge
+                          <StatusBadge status={ticket.status} />
+                        ) : (
+                          // CRUD tickets: editable status dropdown
+                          <select
+                            className="text-xs font-semibold bg-transparent border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            value={ticket.status}
+                            onChange={(e) => updateStatus(ticket.id, e.target.value)}
+                          >
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {ticket.source === 'Historical' ? (
+                          // Historical tickets: N/A badge
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                            N/A
+                          </span>
+                        ) : ticket.status === 'Open' ? (
+                          // CRUD Open tickets: agent assignment dropdown
+                          <select
+                            className="text-xs font-semibold bg-transparent border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                            value={ticket.assigned_agent || ''}
+                            onChange={(e) => updateAgent(ticket.id, e.target.value)}
+                          >
+                            <option value="">Assign Agent</option>
+                            {AGENT_LIST.map((agent) => (
+                              <option key={agent} value={agent}>{agent}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          // CRUD Pending/Resolved: read-only agent badge
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            ticket.assigned_agent
+                              ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                              : 'bg-gray-100 text-gray-500 border border-gray-200'
+                          }`}>
+                            {ticket.assigned_agent || 'Unassigned'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-gray-500">{formatDate(ticket.created_at)}</td>
                       <td className="px-6 py-4 text-right">

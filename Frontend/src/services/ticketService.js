@@ -23,4 +23,10 @@ export const ticketService = {
       body: JSON.stringify({ status }),
     });
   },
+  updateTicketAgent: async (id, assignedAgent) => {
+    return await apiRequest(`/api/tickets/${id}/assign-agent`, {
+      method: 'PATCH',
+      body: JSON.stringify({ assigned_agent: assignedAgent }),
+    });
+  },
 };
