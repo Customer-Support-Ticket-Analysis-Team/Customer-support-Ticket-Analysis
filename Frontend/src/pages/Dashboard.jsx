@@ -133,10 +133,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* KPI Cards (CRUD + Historical) — all filtered by selected date range */}
+        {/* KPI Cards (CRUD + Historical) — per updated business logic */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
           <StatCard
-            label="Total Tickets (CRUD)"
+            label="Total Tickets"
             value={summary?.total_tickets ?? 0}
             icon={Ticket}
             colorClass="bg-blue-600 shadow-blue-600/20"
@@ -148,7 +148,7 @@ const Dashboard = () => {
             colorClass="bg-red-600 shadow-red-600/20"
           />
           <StatCard
-            label="In Progress"
+            label="Pending (In Progress)"
             value={summary?.in_progress_tickets ?? 0}
             icon={Clock}
             colorClass="bg-amber-600 shadow-amber-600/20"
@@ -174,7 +174,10 @@ const Dashboard = () => {
         </div>
 
         {/* Compact Historical Insights */}
-        {ticketStatusData || firstResponseData ? (
+        {(
+          (ticketStatusData && ticketStatusData.statuses && ticketStatusData.statuses.length > 0) ||
+          (firstResponseData && firstResponseData.by_ticket_type && firstResponseData.by_ticket_type.length > 0)
+        ) ? (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="card h-full animate-fade-in">
               <div className="p-6 border-b border-gray-100">

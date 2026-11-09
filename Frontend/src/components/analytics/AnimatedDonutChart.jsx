@@ -25,7 +25,7 @@ const AnimatedDonutChart = ({
     setAnimate(true);
   }, []);
 
-  if (!data || !data.statuses || !data.cells) {
+  if (!data || !data.statuses || !data.cells || data.statuses.length === 0 || data.cells.length === 0) {
     return null;
   }
 
