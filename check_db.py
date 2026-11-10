@@ -11,7 +11,7 @@ for row in conn.execute('SELECT * FROM historical_tickets LIMIT 5').fetchall():
 
 print()
 print('=== First response time count ===')
-print(conn.execute("SELECT COUNT(*) FROM historical_tickets WHERE first_response_time IS NOT NULL").fetchone()[0])
+print(conn.execute("SELECT COUNT(*) FRO historical_tickets WHERE first_response_time IS NOT NULL").fetchone()[0])
 
 print()
 print('=== Time to resolution count ===')
