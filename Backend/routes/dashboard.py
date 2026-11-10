@@ -1,6 +1,26 @@
 from flask import Blueprint, jsonify, request
 from database import get_connection, date_range_params, apply_date_filter
 
+dashboard_bp = Blueprint("dashboard", _name_, url_prefix="/api/dashboard")
+
+
+def _count(connection, table, conditions, params, date_column=None,
+           from_date=None, to_date=None, apply_date=True):
+    """Count rows in table satisfying conditions.
+
+    If apply_date is True and a date range is provided, appends an inclusive
+    date filter on date_column (start inclusive, end covers the whole day).
+    All values are parameterized.
+    """
+    clauses = list(conditions)
+    p = list(params)
+    if apply_date and date_column and (from_date or to_date):
+        apply_date_filter(clauses, p, from_date, to_date, date_column)
+    sql = f"…
+https://github.com/Customer-Support-Ticket-Analysis-Team/Customer-support-Ticket-Analysis is url pe jaake ek nayi branch bnake hi code add karna main branch me mat karna pehle branch select ho jaaye tab
+view all branch pe jaake nayi branch bnaoo apne naam se then back aake dobara select karo jab main ki jagah tumhari wali branch aaye tab edit karnafrom flask import Blueprint, jsonify, request
+from database import get_connection, date_range_params, apply_date_filter
+
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
 
